@@ -27,7 +27,7 @@ export const createNewUser = async (req, res, next) => {
   } catch (err) {
     //  handle error for duplicate email
     if (err.code === 11000) {
-      return next(new ErrorHandler(400, "email already registered."))
+      return next(new ErrorHandler(400, "email already registered."));
     }
     return next(new ErrorHandler(400, err));
   }
@@ -42,7 +42,7 @@ export const userLogin = async (req, res, next) => {
     const user = await findUserRepo({ email }, true);
     if (!user) {
       return next(
-        new ErrorHandler(401, "user not found! register yourself now!!")
+        new ErrorHandler(401, "user not found! register yourself now!!"),
       );
     }
     const passwordMatch = await user.comparePassword(password);
@@ -67,6 +67,25 @@ export const logoutUser = async (req, res, next) => {
 
 export const forgetPassword = async (req, res, next) => {
   // Implement feature for forget password
+  try {
+    const email = req.body.email;
+    console
+    const user = await findUserRepo({ email }, true);
+    if (!user) {
+      return next(
+        new ErrorHandler(401, "user not found! register yourself now!!"),
+      );
+    }
+    const token = await user.getResetPasswordToken();
+
+    await sendPasswordResetEmail(
+      user,
+      `http://localhost:3000/api/storefleet/user/password/reset/${token}`,
+    );
+    res.status(200).json({ success: true, msg: "forget link is send to user mail."})
+  } catch (error) {
+    return next(new ErrorHandler(400, error));
+  }
 };
 
 export const resetUserPassword = async (req, res, next) => {
@@ -97,7 +116,7 @@ export const updatePassword = async (req, res, next) => {
 
     if (!newPassword || newPassword !== confirmPassword) {
       return next(
-        new ErrorHandler(401, "mismatch new password and confirm password!")
+        new ErrorHandler(401, "mismatch new password and confirm password!"),
       );
     }
 
