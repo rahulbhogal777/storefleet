@@ -69,7 +69,7 @@ export const forgetPassword = async (req, res, next) => {
   // Implement feature for forget password
   try {
     const email = req.body.email;
-    console
+    console;
     const user = await findUserRepo({ email }, true);
     if (!user) {
       return next(
@@ -77,12 +77,16 @@ export const forgetPassword = async (req, res, next) => {
       );
     }
     const token = await user.getResetPasswordToken();
+    await user.save();
+
 
     await sendPasswordResetEmail(
       user,
       `http://localhost:3000/api/storefleet/user/password/reset/${token}`,
     );
-    res.status(200).json({ success: true, msg: "forget link is send to user mail."})
+    res
+      .status(200)
+      .json({ success: true, msg: "forget link is send to user mail.", token: token });
   } catch (error) {
     return next(new ErrorHandler(400, error));
   }
@@ -90,6 +94,29 @@ export const forgetPassword = async (req, res, next) => {
 
 export const resetUserPassword = async (req, res, next) => {
   // Implement feature for reset password
+  try {
+    const { password, confirmPassword } = req.body;
+    const token = req.params.token;
+    const hashToken = crypto.createHash("sha256").update(token).digest("hex");
+  
+    if (password !== confirmPassword) {
+      return next(
+        new ErrorHandler(401, "Password is matched with confirm password."),
+      );
+    }
+   
+    const user = await findUserForPasswordResetRepo(hashToken);
+    if (!user) {
+      return next(new ErrorHandler(401, "user not found! "));
+    }
+    user.password = confirmPassword;
+    await user.save();
+    res
+      .status(200)
+      .json({ success: true, msg: "Password changed successfully." });
+  } catch (error) {
+    return next(new ErrorHandler(400, error));
+  }
 };
 
 export const getUserDetails = async (req, res, next) => {
