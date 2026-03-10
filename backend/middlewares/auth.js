@@ -7,15 +7,16 @@ export const auth = async (req, res, next) => {
   if (!token) {
     return next(new ErrorHandler(401, "login to access this route!"));
   }
-  const decodedData = await jwt.verify(token, process.env.JWT_Secret);
+  const decodedData = jwt.verify(token, process.env.JWT_Secret);
   req.user = await UserModel.findById(decodedData.id);
   next();
 };
 
-export const authByUserRole = (...roles) => {
+export const authByUserRole = (roles) => {
   // fix this middleware for admin access only
   return async (req, res, next) => {
-    if (roles.includes(req.user.role !== "admin")) {
+    
+    if (req.user.role !== roles) {
       return next(
         new ErrorHandler(
           403,

@@ -99,9 +99,10 @@ export const resetUserPassword = async (req, res, next) => {
     const token = req.params.token;
     const hashToken = crypto.createHash("sha256").update(token).digest("hex");
   
-    if (password !== confirmPassword) {
+    if (!password || password !== confirmPassword) {
       return next(
-        new ErrorHandler(401, "Password is matched with confirm password."),
+        new ErrorHandler(401, "mismatch new password and confirm password!"),
+
       );
     }
    
