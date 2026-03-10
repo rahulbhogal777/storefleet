@@ -95,11 +95,11 @@ export const forgetPassword = async (req, res, next) => {
 export const resetUserPassword = async (req, res, next) => {
   // Implement feature for reset password
   try {
-    const { password, confirmPassword } = req.body;
+    const { newPassword, confirmPassword } = req.body;
     const token = req.params.token;
     const hashToken = crypto.createHash("sha256").update(token).digest("hex");
   
-    if (!password || password !== confirmPassword) {
+    if (!newPassword || newPassword !== confirmPassword) {
       return next(
         new ErrorHandler(401, "mismatch new password and confirm password!"),
 
