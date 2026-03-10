@@ -79,14 +79,15 @@ export const forgetPassword = async (req, res, next) => {
     const token = await user.getResetPasswordToken();
     await user.save();
 
-
     await sendPasswordResetEmail(
       user,
       `http://localhost:3000/api/storefleet/user/password/reset/${token}`,
     );
-    res
-      .status(200)
-      .json({ success: true, msg: "forget link is send to user mail.", token: token });
+    res.status(200).json({
+      success: true,
+      msg: "forget link is send to user mail.",
+      token: token,
+    });
   } catch (error) {
     return next(new ErrorHandler(400, error));
   }
@@ -98,14 +99,13 @@ export const resetUserPassword = async (req, res, next) => {
     const { newPassword, confirmPassword } = req.body;
     const token = req.params.token;
     const hashToken = crypto.createHash("sha256").update(token).digest("hex");
-  
+
     if (!newPassword || newPassword !== confirmPassword) {
       return next(
         new ErrorHandler(401, "mismatch new password and confirm password!"),
-
       );
     }
-   
+
     const user = await findUserForPasswordResetRepo(hashToken);
     if (!user) {
       return next(new ErrorHandler(401, "user not found! "));
@@ -212,4 +212,19 @@ export const deleteUser = async (req, res, next) => {
 
 export const updateUserProfileAndRole = async (req, res, next) => {
   // Write your code here for updating the roles of other users by admin
+  const { name, email, role } = req.body;
+
+  try {
+    const updatedUserDetail = await updateUserRoleAndProfileRepo(
+      { _id: req.params.id },
+      {
+        name,
+        email,
+        role,
+      },
+    );
+    res.status(201).json({ success: true, updatedUserDetail });
+  } catch (error) {
+    return next(new ErrorHandler(400, error));
+  }
 };
