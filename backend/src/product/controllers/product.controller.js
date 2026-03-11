@@ -31,6 +31,13 @@ export const addNewProduct = async (req, res, next) => {
 
 export const getAllProducts = async (req, res, next) => {
   // Implement the functionality for search, filter and pagination this function.
+  try {
+    const products = await getAllProductsRepo();  
+    const totalDocument = await getTotalCountsOfProduct();
+    res.status(200).json({ success: true, products, totalDocument });
+  } catch (error) {
+    return next(new ErrorHandler(400, error));
+  }
 };
 
 export const updateProduct = async (req, res, next) => {
