@@ -30,11 +30,50 @@ export const addNewProduct = async (req, res, next) => {
 };
 
 export const getAllProducts = async (req, res, next) => {
-  // Implement the functionality for search, filter and pagination this function.
+  
   try {
-    const products = await getAllProductsRepo();  
-    const totalDocument = await getTotalCountsOfProduct();
-    res.status(200).json({ success: true, products, totalDocument });
+    const resultPerPage = 5;
+    const currentPage = Number(req.query.page) || 1;
+    const skip = resultPerPage * (currentPage - 1);
+
+    let query = {};
+
+    if (req.query.keyword) {
+      query.name = {
+        $regex: req.query.keyword,
+        $options: "i",
+      };
+    }
+
+    let queryCopy = { ...req.query };
+
+    const removeFields = ["keyword", "page", "limit"];
+    removeFields.forEach((key) => delete queryCopy[key]);
+
+    let queryString = JSON.stringify(queryCopy);
+
+    queryString = queryString.replace(
+      /\b(gte|gt|lte|lt)\b/g,
+      (key) => `$${key}`,
+    );
+
+    const filter = JSON.parse(queryString);
+
+    Object.assign(query, filter);
+
+    const products = await getAllProductsRepo(query, resultPerPage, skip);
+
+    const totalDocument = await getTotalCountsOfProduct(query);
+
+    res
+      .status(200)
+      .json({
+        success: true,
+        products,
+        totalDocument,
+        resultPerPage,
+        currentPage,
+      });
   } catch (error) {
     return next(new ErrorHandler(400, error));
   }
@@ -141,8 +180,8 @@ export const deleteReview = async (req, res, next) => {
       return next(
         new ErrorHandler(
           400,
-          "pls provide productId and reviewId as query params"
-        )
+          "pls provide productId and reviewId as query params",
+        ),
       );
     }
     const product = await findProductRepo(productId);

@@ -4,8 +4,8 @@ export const addNewProductRepo = async (product) => {
   return await new ProductModel(product).save();
 };
 
-export const getAllProductsRepo = async () => {
-  return await ProductModel.find({});
+export const getAllProductsRepo = async (query, resultPerPage, skip) => {
+  return await ProductModel.find(query).limit(resultPerPage).skip(skip);
 };
 
 export const updateProductRepo = async (_id, updatedData) => {
@@ -24,8 +24,8 @@ export const getProductDetailsRepo = async (_id) => {
   return await ProductModel.findById(_id);
 };
 
-export const getTotalCountsOfProduct = async () => {
-  return await ProductModel.countDocuments();
+export const getTotalCountsOfProduct = async (query) => {
+  return await ProductModel.countDocuments(query);
 };
 
 export const findProductRepo = async (productId) => {
