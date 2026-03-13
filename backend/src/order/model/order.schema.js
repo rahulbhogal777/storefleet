@@ -67,6 +67,7 @@ const orderSchema = new mongoose.Schema({
   },
   paidAt: {
     type: Date,
+    default: new Date(),
     required: true,
   },
   itemsPrice: {
